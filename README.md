@@ -36,14 +36,14 @@ uvx --from https://github.com/KennethJAllen/proper-pixel-art.git ppa -i <input_p
 | `-i`, `--input` `<path>`         | Source image file in pixel-art-style                                                                      |
 | `-o`, `--output` `<path>`        | Output directory or file path for result. (default: '.')                                                  |
 | `-c`, `--colors` `<int>`         | Number of colors for output. May need to try a few different values. (default 16)                         |
-| `-p`, `--pixel-size` `<int>`     | Size of each “pixel” in the output. (default: 1)                                                          |
+| `-s`, `--result_scale` `<int>`     | Width/height of each “pixel” in the output. (default: 1)                                                          |
 | `-t`, `--transparent` `<bool>`   | Output with transparent background. (default: off)                                                        |
 | `-w`, `--pixel-width` `<int>`    | Width of the pixels in the input image. If not set, it will be determined automatically. (default: None)  |
-| `-s`, `--upscale-factor` `<int>` | Initial image upscale factor. Increasing this may help detect pixel edges. (default 2)                    |
+| `-u`, `--upscale-factor` `<int>` | Initial image upscale factor. Increasing this may help detect pixel edges. (default 2)                    |
 
 #### Example
 
-`uv run ppa -i assets/blob/blob.png -o . -c 16 -p 20 -t`
+`uv run ppa -i assets/blob/blob.png -o . -c 16 -s 20 -t`
 
 ### Python
 

@@ -30,8 +30,8 @@ def parse_args() -> argparse.Namespace:
         help="Number of colors to quantize the image to. From 1 to 256"
     )
     parser.add_argument(
-        "-p", "--pixel-size",
-        dest="pixel_size",
+        "-s", "--result_scale",
+        dest="result_scale",
         type=int,
         default=1,
         help="Width of the 'pixels' in the output image (default: 1)."
@@ -52,7 +52,7 @@ def parse_args() -> argparse.Namespace:
         help="Width of the pixels in the input image. If not set, it will be determined automatically."
     )
     parser.add_argument(
-        "-s",
+        "-u",
         "--upscale-factor",
         dest="upscale_factor",
         type=int,
@@ -81,7 +81,7 @@ def main() -> None:
     pixelated = pixelate.pixelate(
         img,
         num_colors = args.num_colors,
-        result_scale = args.pixel_size,
+        result_scale = args.result_scale,
         transparent_background = args.transparent,
         pixel_width = args.pixel_width,
         initial_upsample_factor = args.upscale_factor
