@@ -254,3 +254,14 @@ The current approach to turning pixel art into useable assets for games are eith
     - Result upscaled by a factor of $20 \times$ using nearest neighbor.
 
 <img src="./assets/blob/upsampled.png" width="80%" alt="blob upscaled"/>
+
+## Testing
+
+To test algorithm changes and verify output quality:
+
+```bash
+# Run visual output tests
+uv run pytest -s
+```
+
+The tests run the algorithm on all test assets (`assets/{name}/{name}.png`) and save outputs to `tests/outputs/` for manual visual inspection.
