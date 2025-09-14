@@ -30,8 +30,8 @@ def parse_args() -> argparse.Namespace:
         help="Number of colors to quantize the image to. From 1 to 256"
     )
     parser.add_argument(
-        "-s", "--result-scale",
-        dest="result_scale",
+        "-s", "--scale-result",
+        dest="scale_result",
         type=int,
         default=1,
         help="Width of the 'pixels' in the output image (default: 1)."
@@ -53,11 +53,13 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "-u",
-        "--upscale-factor",
-        dest="upscale_factor",
+        "--initial-upscale",
+        dest="initial_upscale",
         type=int,
         default=2,
-        help="Image upscale factor."
+        help=("Initial image upscale factor in mesh detection algorithm. "
+              "If the detected spacing is too large, "
+              "it may be useful to increase this value.")
     )
     return parser.parse_args()
 
@@ -81,10 +83,10 @@ def main() -> None:
     pixelated = pixelate.pixelate(
         img,
         num_colors = args.num_colors,
-        result_scale = args.result_scale,
+        scale_result = args.scale_result,
         transparent_background = args.transparent,
         pixel_width = args.pixel_width,
-        initial_upsample_factor = args.upscale_factor
+        initial_upscale = args.initial_upscale
         )
 
     pixelated.save(out_path)

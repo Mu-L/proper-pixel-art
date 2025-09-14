@@ -1,3 +1,4 @@
+"""Handles mesh detection from pixel art style images"""
 from pathlib import Path
 from PIL import Image
 import numpy as np
@@ -70,7 +71,9 @@ def detect_grid_lines(edges: np.ndarray,
     clustered_lines_y = cluster_lines(lines_y)
     return clustered_lines_x, clustered_lines_y
 
-def get_pixel_width(lines_x: list[int], lines_y: list[int], trim_outlier_fraction: float = 0.2) -> int:
+def get_pixel_width(lines_x: list[int],
+                    lines_y: list[int],
+                    trim_outlier_fraction: float = 0.2) -> int:
     """
     Takes lists of line coordinates in x and y direction, and outlier fraction.
     Returns the predicted pixel width by filtering outliers and taking the median.
@@ -216,12 +219,3 @@ def _is_trivial_mesh(img_mesh: tuple[list[int], list[int]]) -> bool:
     of the image respectively.
     """
     return len(img_mesh[0]) == 2 and len(img_mesh[1]) == 2
-
-def main():
-    img_path = Path.cwd() / "assets" / "blob" / "blob.png"
-    img = Image.open(img_path).convert("RGBA")
-    mesh_x, mesh_y = compute_mesh(img)
-    print(mesh_x, mesh_y)
-
-if __name__ == "__main__":
-    main()
