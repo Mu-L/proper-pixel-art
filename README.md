@@ -24,9 +24,9 @@ First, obtain a source pixel-art-style image (e.g. a pixel-art-style image gener
 ### CLI
 
 ```bash
-uv run ppa -i <input_path> -o <output_path> -c <num_colors> -p <pixel_size> [-t]
+uv run ppa -i <input_path> -o <output_path> -c <num_colors> -s <result_scale> [-t]
 # or directly using uvx
-uvx --from https://github.com/KennethJAllen/proper-pixel-art.git ppa -i <input_path> -o <output_path> -c <num_colors> -p <pixel_size> [-t]
+uvx --from https://github.com/KennethJAllen/proper-pixel-art.git ppa -i <input_path> -o <output_path> -c <num_colors> -s <result_scale> [-t]
 ```
 
 #### Flags
@@ -36,7 +36,7 @@ uvx --from https://github.com/KennethJAllen/proper-pixel-art.git ppa -i <input_p
 | `-i`, `--input` `<path>`         | Source image file in pixel-art-style                                                                      |
 | `-o`, `--output` `<path>`        | Output directory or file path for result. (default: '.')                                                  |
 | `-c`, `--colors` `<int>`         | Number of colors for output. May need to try a few different values. (default 16)                         |
-| `-s`, `--result_scale` `<int>`     | Width/height of each “pixel” in the output. (default: 1)                                                          |
+| `-s`, `--result-scale` `<int>`     | Width/height of each “pixel” in the output. (default: 1)                                                          |
 | `-t`, `--transparent` `<bool>`   | Output with transparent background. (default: off)                                                        |
 | `-w`, `--pixel-width` `<int>`    | Width of the pixels in the input image. If not set, it will be determined automatically. (default: None)  |
 | `-u`, `--upscale-factor` `<int>` | Initial image upscale factor. Increasing this may help detect pixel edges. (default 2)                    |
