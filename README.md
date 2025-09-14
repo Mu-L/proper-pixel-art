@@ -79,17 +79,17 @@ result.save('output.png')
   - Upscale initial image. This may help detect lines.
 
 - `transparent_background` : `bool`
-  - If True, floos fills each corner of the result with transparent alpha.
+  - If True, flood fills each corner of the result with transparent alpha.
 
 - `intermediate_dir` : `Path | None`
   - Directory to save images visualizing intermediate steps of algorithm. Useful for development.
 
-- `pixel_width` : `Path | None`
+- `pixel_width` : `int | None`
   - Width of the pixels in the input image. If not set, it will be determined automatically. It may be helpful to increase this parameter if not enough pixel edges are being detected.
 
 #### Returns
 
-A PIL image with 
+A PIL image with true pixel resolution and quantized colors. 
 
 ## Examples
 
@@ -159,7 +159,7 @@ Here are a few examples. A mesh is computed, where each cell corresponds to one 
 </table>
 
 ### Pumpkin
-- Screenshot from Google Images of Stardew Valley asset. This is an adversarial exmaple as the source image is both low quality and the object is round.
+- Screenshot from Google Images of Stardew Valley asset. This is an adversarial example as the source image is both low quality and the object is round.
 
 <table align="center" width="100%">
   <tr>
@@ -187,7 +187,7 @@ Here are a few examples. A mesh is computed, where each cell corresponds to one 
 
 <img src="./assets/mountain/real.jpg" width="50%" alt="Original mountain"/>
 
-- Here are the results of first requesting a pixalated version of the mountain, then using the tool to get a true resolution pixel art version.
+- Here are the results of first requesting a pixelated version of the mountain, then using the tool to get a true resolution pixel art version.
 
 <table align="center" width="100%">
   <tr>
@@ -211,7 +211,7 @@ The result of pixel-art style images from LLMs are noisy, high resolution images
 
 The current approach to turning pixel art into useable assets for games are either
 1) Use naive downsampling which does not give a result that is faithful to the original image.
-2) Manually re-create the image in the approperiate resolution pixel by pixel.
+2) Manually re-create the image in the appropriate resolution pixel by pixel.
 
 ## Algorithm
 - The main algorithm solves these challenges. Here is a high level overview. We will apply it step by step on this example image of blob pixel art that was generated from GPT-4o.
