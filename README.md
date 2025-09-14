@@ -43,7 +43,7 @@ uvx --from https://github.com/KennethJAllen/proper-pixel-art.git ppa -i <input_p
 
 #### Example
 
-`uv run ppa -i assets/blob/blob.png -o . -c 16 -s 20 -t`
+`uv run ppa -i assets/blob/blob.png -c 16 -s 20 -t`
 
 ### Python
 
@@ -227,7 +227,6 @@ The current approach to turning pixel art into useable assets for games are eith
 
 2) Upscale by a factor of 2 using nearest neighbor.
     - This can help identify the correct pixel mesh.
-    - It is possible that a similar result could be achived by tuning the parameters in the following steps. Further investigation is required.
 
 3) Find edges of the pixel art using [Canny edge detection](https://docs.opencv.org/4.x/da/d22/tutorial_py_canny.html).
 
