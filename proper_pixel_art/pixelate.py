@@ -7,7 +7,8 @@ def downsample(image: Image.Image,
                mesh_lines: tuple[list[int], list[int]],
                transparent_background: bool = False) -> Image.Image:
     """
-    Downsample the image by looping over each cell in mesh and using the most common color as the pixel color.
+    Downsample the image by looping over each cell in mesh and
+    using the most common color as the pixel color.
     If transparent_background is True, flood fill each corner of the image with 0 alpha.
     """
     lines_x, lines_y = mesh_lines
@@ -60,18 +61,26 @@ def pixelate(
 
     Returns the true pixelated image.
     """
-    rgba = image.convert("RGBA")
+    image_rgba = image.convert("RGBA")
 
+    # Calculate the pixel mesh lines
     mesh_lines, scaled_img = mesh.compute_mesh_with_scaling(
-        rgba,
+        image_rgba,
         initial_upscale,
         output_dir=intermediate_dir,
         pixel_width=pixel_width
     )
 
-    paletted_img = colors.palette_img(scaled_img, num_colors=num_colors)
+    # Calculate the color palette
+    palette = colors.palette_img(image_rgba, num_colors=num_colors, output_dir=intermediate_dir)
 
+    # Apply the color palette to the scaled image
+    paletted_img = colors.apply_palette(scaled_img, palette, output_dir=intermediate_dir)
+
+    # Downsample the image to 1 pixel per cell in the mesh
     result = downsample(paletted_img, mesh_lines, transparent_background=transparent_background)
+
+    # upscale the result if scale_result is set to an integer
     if scale_result is not None:
         result = utils.scale_img(result, int(scale_result))
 
