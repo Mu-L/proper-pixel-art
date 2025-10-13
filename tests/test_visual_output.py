@@ -43,7 +43,7 @@ def test_pixelate_output(asset_name, asset_path):
     result = pixelate.pixelate(
         img,
         num_colors=params["num_colors"],
-        result_scale=params["result_scale"],
+        scale_result=params["result_scale"],
         transparent_background=False,
         intermediate_dir=output_dir,
     )
