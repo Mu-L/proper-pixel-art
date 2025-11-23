@@ -1,47 +1,56 @@
 """Command line interface"""
+
 import argparse
 from pathlib import Path
 from PIL import Image
 from proper_pixel_art import pixelate
+
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Generate a true-resolution pixel-art image from a source image."
     )
     parser.add_argument(
-        "-i", "--input",
-        dest="img_path",
-        type=Path,
-        required=True,
-        help="Path to the source image file."
+        "input_path", type=Path, nargs="?", help="Path to the source input file."
     )
     parser.add_argument(
-        "-o", "--output",
+        "-i",
+        "--input",
+        dest="input_path_flag",
+        type=Path,
+        help="Path to the source input file.",
+    )
+    parser.add_argument(
+        "-o",
+        "--output",
         dest="out_path",
         type=Path,
         default=".",
-        help="Path where the pixelated image will be saved. Can be either a directory or a file path."
+        help="Path where the pixelated image will be saved. Can be either a directory or a file path.",
     )
     parser.add_argument(
-        "-c", "--colors",
+        "-c",
+        "--colors",
         dest="num_colors",
         type=int,
         default=16,
-        help="Number of colors to quantize the image to. From 1 to 256"
+        help="Number of colors to quantize the image to. From 1 to 256",
     )
     parser.add_argument(
-        "-s", "--scale-result",
+        "-s",
+        "--scale-result",
         dest="scale_result",
         type=int,
         default=1,
-        help="Width of the 'pixels' in the output image (default: 1)."
+        help="Width of the 'pixels' in the output image (default: 1).",
     )
     parser.add_argument(
-        "-t", "--transparent",
+        "-t",
+        "--transparent",
         dest="transparent",
         action="store_true",
         default=False,
-        help="Produce a transparent background in the output if set."
+        help="Produce a transparent background in the output if set.",
     )
     parser.add_argument(
         "-w",
@@ -49,7 +58,7 @@ def parse_args() -> argparse.Namespace:
         dest="pixel_width",
         type=int,
         default=None,
-        help="Width of the pixels in the input image. If not set, it will be determined automatically."
+        help="Width of the pixels in the input image. If not set, it will be determined automatically.",
     )
     parser.add_argument(
         "-u",
@@ -57,13 +66,27 @@ def parse_args() -> argparse.Namespace:
         dest="initial_upscale",
         type=int,
         default=2,
-        help=("Initial image upscale factor in mesh detection algorithm. "
-              "If the detected spacing is too large, "
-              "it may be useful to increase this value.")
+        help=(
+            "Initial image upscale factor in mesh detection algorithm. "
+            "If the detected spacing is too large, "
+            "it may be useful to increase this value."
+        ),
     )
-    return parser.parse_args()
+    args = parser.parse_args()
 
-def resolve_output_path(out_path: Path, input_path: Path, suffix: str = "_pixelated") -> Path:
+    # Either take the input as the first argument or use the -i flag
+    if args.input_path is None and args.input_path_flag is None:
+        parser.error("You must provide an input path (positional or with -i).")
+    args.input_path = (
+        args.input_path if args.input_path is not None else args.input_path_flag
+    )
+
+    return args
+
+
+def resolve_output_path(
+    out_path: Path, input_path: Path, suffix: str = "_pixelated"
+) -> Path:
     """
     If outpath is a directory, make it a file path
     with filename e.g. (input stem)_pixelated.png
@@ -73,23 +96,26 @@ def resolve_output_path(out_path: Path, input_path: Path, suffix: str = "_pixela
     filename = f"{input_path.stem}{suffix}.png"
     return out_path / filename
 
+
 def main() -> None:
     args = parse_args()
-    img_path = Path(args.img_path)
-    out_path = resolve_output_path(Path(args.out_path), img_path)
+    input_path = Path(args.input_path).expanduser()
+
+    out_path = resolve_output_path(Path(args.out_path), input_path)
     out_path.parent.mkdir(exist_ok=True, parents=True)
 
-    img = Image.open(img_path)
+    img = Image.open(input_path)
     pixelated = pixelate.pixelate(
         img,
-        num_colors = args.num_colors,
-        scale_result = args.scale_result,
-        transparent_background = args.transparent,
-        pixel_width = args.pixel_width,
-        initial_upscale_factor = args.initial_upscale
-        )
+        num_colors=args.num_colors,
+        scale_result=args.scale_result,
+        transparent_background=args.transparent,
+        pixel_width=args.pixel_width,
+        initial_upscale_factor=args.initial_upscale,
+    )
 
     pixelated.save(out_path)
+
 
 if __name__ == "__main__":
     main()
