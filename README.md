@@ -8,17 +8,31 @@
 
 ## Installation
 
-### Clone the Repository
+### From PyPI
+
+```bash
+pip install proper-pixel-art
+```
+
+Or with uv:
+
+```bash
+uv add proper-pixel-art
+```
+
+### From Source
+
+Clone the Repository
 
 ```bash
 git clone git@github.com:KennethJAllen/proper-pixel-art.git
 cd proper-pixel-art
 ```
 
-### Create Virtual Environment
+#### Create Virtual Environment
 
 - Install [uv](https://docs.astral.sh/uv/getting-started/installation/) if not already installed.
-- Sync environments
+- Sync environments:
   - `uv sync`
 
 ## Usage
