@@ -44,7 +44,7 @@ First, obtain a source pixel-art-style image (e.g. a pixel-art-style image gener
 ```bash
 uv run ppa <input_path> -o <output_path> -c <num_colors> -s <result_scale> [-t]
 # or directly using uvx
-uvx --from https://github.com/KennethJAllen/proper-pixel-art.git ppa <input_path> -o <output_path> -c <num_colors> -s <result_scale> [-t]
+uvx --from "proper-pixel-art" ppa <input_path> -o <output_path> -c <num_colors> -s <result_scale> [-t]
 ```
 
 #### Flags
@@ -61,7 +61,11 @@ uvx --from https://github.com/KennethJAllen/proper-pixel-art.git ppa <input_path
 
 #### Example
 
-`uv run ppa assets/blob/blob.png -c 16 -s 20 -t`
+```bash
+uv run ppa assets/blob/blob.png -c 16 -s 20 -t
+# or directly using uvx
+uvx --from "proper-pixel-art" ppa path/to/input.png -o . -c 16 -s 5 -t
+```
 
 ### Python
 
