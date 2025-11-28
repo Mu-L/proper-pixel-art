@@ -8,18 +8,6 @@
 
 ## Installation
 
-### From PyPI
-
-```bash
-pip install proper-pixel-art
-```
-
-Or with uv:
-
-```bash
-uv add proper-pixel-art
-```
-
 ### From Source
 
 Clone the Repository
@@ -34,6 +22,18 @@ cd proper-pixel-art
 - Install [uv](https://docs.astral.sh/uv/getting-started/installation/) if not already installed.
 - Sync environments:
   - `uv sync`
+
+### From Pip
+
+```bash
+pip install proper-pixel-art
+```
+
+Or with uv:
+
+```bash
+uv add proper-pixel-art
+```
 
 ## Usage
 
