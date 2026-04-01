@@ -49,7 +49,7 @@ First, obtain a source pixel-art-style image (e.g. a pixel-art-style image gener
 
 ### Web Interface
 
-The easiest way to use this tool — no coding required. Opens a browser interface where you can upload an image and adjust settings interactively.
+Opens a browser interface where you can upload an image and adjust settings interactively.
 
 ```bash
 uv sync --extra web
