@@ -99,7 +99,7 @@ def generate_images(client: OpenAI, args: argparse.Namespace) -> list[Image.Imag
     print(f"Settings: size={args.size}")
 
     response = client.images.generate(
-        model="gpt-image-1.5",
+        model="gpt-image-2",
         prompt=args.prompt,
         n=args.n,
         size=args.size,
