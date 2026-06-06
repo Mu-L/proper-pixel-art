@@ -7,20 +7,26 @@ import numpy as np
 from PIL import Image
 
 from proper_pixel_art import colors, utils
+from proper_pixel_art.config import MeshConfig
 from proper_pixel_art.utils import Lines, Mesh
 
+# Shared defaults so the helpers below don't re-declare literals; MeshConfig
+# holds the canonical values.
+_DEFAULTS = MeshConfig()
 
-def close_edges(edges: np.ndarray, kernel_size: int = 10) -> np.ndarray:
+
+def close_edges(
+    edges: np.ndarray, kernel_size: int = _DEFAULTS.closure_kernel_size
+) -> np.ndarray:
     """
     Apply a morphological closing to fill small gaps in edge map.
     """
-    # Use a rectangular kernel of size kernel_size x kernel_size
     kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (kernel_size, kernel_size))
     closed = cv2.morphologyEx(edges, cv2.MORPH_CLOSE, kernel)
     return closed
 
 
-def cluster_lines(lines: Lines, threshold: int = 4) -> Lines:
+def cluster_lines(lines: Lines, threshold: int = _DEFAULTS.cluster_threshold) -> Lines:
     """Remove lines that are too close to each other by clustering near values"""
     if not lines:
         return []
@@ -35,15 +41,7 @@ def cluster_lines(lines: Lines, threshold: int = 4) -> Lines:
     return [int(np.median(cluster)) for cluster in clusters]
 
 
-def detect_grid_lines(
-    edges: np.ndarray,
-    hough_rho: float = 1.0,
-    hough_theta_rad: float = np.deg2rad(1),
-    hough_threshold: int = 100,
-    hough_min_line_len: int = 50,
-    hough_max_line_gap: int = 10,
-    angle_threshold_deg=15,
-) -> Mesh:
+def detect_grid_lines(edges: np.ndarray, mesh_config: MeshConfig | None = None) -> Mesh:
     """
     - Use Hough line transformation to detect the pixel edges.
     - Only keep lines that are close to vertical or horizontal
@@ -51,13 +49,15 @@ def detect_grid_lines(
     Return:
     - two lists: x-coordinates (vertical lines) and y-coordinates (horizontal lines)
     """
+    mesh_config = mesh_config or MeshConfig()
+    hough = mesh_config.hough
     hough_lines = cv2.HoughLinesP(
         edges,
-        hough_rho,
-        hough_theta_rad,
-        hough_threshold,
-        minLineLength=hough_min_line_len,
-        maxLineGap=hough_max_line_gap,
+        hough.rho,
+        hough.theta_rad,
+        hough.threshold,
+        minLineLength=hough.min_line_len,
+        maxLineGap=hough.max_line_gap,
     )
 
     height, width = edges.shape
@@ -66,6 +66,7 @@ def detect_grid_lines(
     if hough_lines is None:
         return lines_x, lines_y
 
+    angle_threshold_deg = mesh_config.angle_threshold_deg
     # Loop over all detected lines, only keep the ones that are close to vertical or horizontal
     for x1, y1, x2, y2 in hough_lines[:, 0]:
         dx, dy = x2 - x1, y2 - y1
@@ -77,22 +78,23 @@ def detect_grid_lines(
             lines_y.append(round((y1 + y2) / 2))
 
     # Finally cluster the lines so they aren't too close to each other
-    clustered_lines_x = cluster_lines(lines_x)
-    clustered_lines_y = cluster_lines(lines_y)
+    clustered_lines_x = cluster_lines(lines_x, threshold=mesh_config.cluster_threshold)
+    clustered_lines_y = cluster_lines(lines_y, threshold=mesh_config.cluster_threshold)
     return clustered_lines_x, clustered_lines_y
 
 
 def get_pixel_width(
-    line_collection: list[Lines], trim_outlier_fraction: float = 0.2
+    line_collection: list[Lines],
+    trim_outlier_fraction: float = _DEFAULTS.trim_outlier_fraction,
 ) -> int:
     """
     Takes list of line coordinates, and outlier fraction.
     Returns the predicted pixel width by filtering outliers and taking the median.
-    We assume that the grid spacing accress all sets of lines,
+    We assume the grid spacing is consistent across all sets of lines,
     then all grid spacings are concatenated.
 
     The resulting width does not have to be perfect because the color of the pixels
-    are detemined by which color is mostly in the corresponding cells.
+    is determined by which color is mostly in the corresponding cells.
 
     This method could be generalized to cases when the pixel size in the x direction
     is different from the y direction, then the width of each direction
@@ -146,10 +148,9 @@ def homogenize_lines(lines: Lines, pixel_width: int) -> Lines:
 
 def compute_mesh(
     img: Image.Image,
-    canny_thresholds: tuple[int] = (50, 200),
-    closure_kernel_size: int = 8,
     output_dir: Path | None = None,
     pixel_width: int | None = None,
+    mesh_config: MeshConfig | None = None,
 ) -> Mesh:
     """
     Finds grid lines of a high resolution noisy image.
@@ -160,9 +161,8 @@ def compute_mesh(
     - Completes mesh by filling in gaps between identified lines
     inputs:
         img: The image to compute the mesh
-        canny_thresholds: thresholds 1 and 2 for canny edge detection algorithm
-        closure_kernel_size: Kernel size for the morphological closure
         output_dir (optional): If set, saves images of steps in algorithm to dir
+        mesh_config: Tunable mesh-detection parameters (Canny, Hough, clustering, ...)
 
     output:
         Returns The pixel mesh: mesh_x, mesh_y
@@ -173,22 +173,28 @@ def compute_mesh(
     Note: this could even be generalized to detect grid lines that
     have been distorted via linear transformation.
     """
-    # Crop border and zero out mostly transparent pixels from alpha
-    cropped_img = utils.crop_border(img, num_pixels=2)
+    mesh_config = mesh_config or MeshConfig()
+    # Crop border and zero out mostly transparent pixels from alpha.
+    # The grayscale clamp here only suppresses transparent-edge noise before edge
+    # detection, so it intentionally uses the default alpha threshold rather than
+    # color_config.alpha_threshold (which governs the final downsample step).
+    cropped_img = utils.crop_border(img, num_pixels=mesh_config.crop_border_pixels)
     grey_img = colors.clamp_alpha(cropped_img, mode="L")
 
     # Find edges using Canny edge detection
-    edges = cv2.Canny(np.array(grey_img), *canny_thresholds)
+    edges = cv2.Canny(np.array(grey_img), *mesh_config.canny_thresholds)
 
     # Close small gaps in edges with morphological closing
-    closed_edges = close_edges(edges, kernel_size=closure_kernel_size)
+    closed_edges = close_edges(edges, kernel_size=mesh_config.closure_kernel_size)
 
     # Use Hough transform to get an initial estimate for pixel lines
-    mesh_initial = detect_grid_lines(closed_edges)
+    mesh_initial = detect_grid_lines(closed_edges, mesh_config)
 
     if pixel_width is None:
         # Get the true width of the pixels if a value hasn't been provided
-        pixel_width = get_pixel_width(mesh_initial)
+        pixel_width = get_pixel_width(
+            mesh_initial, trim_outlier_fraction=mesh_config.trim_outlier_fraction
+        )
 
     # Fill in the gaps between the lines to complete the grid
     lines_x, lines_y = mesh_initial
@@ -212,9 +218,10 @@ def compute_mesh(
 
 def compute_mesh_with_scaling(
     img: Image.Image,
-    upscale_factor: int,
+    upscale_factor: int = 2,
     output_dir: Path | None = None,
     pixel_width: int | None = None,
+    mesh_config: MeshConfig | None = None,
 ) -> tuple[Mesh, int]:
     """
     Try to compute the mesh on on the image.
@@ -225,14 +232,17 @@ def compute_mesh_with_scaling(
     """
     upscaled_img = utils.scale_img(img, upscale_factor)
     mesh_lines = compute_mesh(
-        upscaled_img, output_dir=output_dir, pixel_width=pixel_width
+        upscaled_img,
+        output_dir=output_dir,
+        pixel_width=pixel_width,
+        mesh_config=mesh_config,
     )
     if not _is_trivial_mesh(mesh_lines):
         return mesh_lines, upscale_factor
 
     # If no mesh is found, then use the original image instead.
     fallback_mesh_lines = compute_mesh(
-        img, output_dir=output_dir, pixel_width=pixel_width
+        img, output_dir=output_dir, pixel_width=pixel_width, mesh_config=mesh_config
     )
     return fallback_mesh_lines, 1
 
@@ -240,7 +250,7 @@ def compute_mesh_with_scaling(
 def _is_trivial_mesh(img_mesh: Mesh) -> bool:
     """
     Returns True if no lines have been identified when computing the mesh.
-    That is, the points in mesh_x and mesh_y conist of the left, right, and top, bottom
+    That is, the points in mesh_x and mesh_y consist of the left, right, and top, bottom
     of the image respectively.
     """
     x_num = len(img_mesh[0])
